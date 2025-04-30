@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real-Time Collaborative Editor</title>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    #editor { width: 80%; height: 400px; border: 1px solid #ccc; padding: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Real-Time Collaborative Editor</h1>
+  <textarea id="editor" placeholder="Start typing..."></textarea>
+
+  <script>
+    const editor = document.getElementById('editor');
+    const socket = new WebSocket('ws://localhost:3000');
+
+    // Track the cursor position
+    editor.addEventListener('click', () => {
+      sendCursorPosition();
+    });
+
+    editor.addEventListener('keyup', () => {
+      sendCursorPosition();
+    });
+
+    function sendCursorPosition() {
+      const cursorPosition = editor.selectionStart;
+      socket.send(JSON.stringify({ type: 'cursor', position: cursorPosition }));
+    }
+
+    // Receive updates for cursor positions
+    socket.addEventListener('message', (event) => {
+      const message = JSON.parse(event.data);
+      if (message.type === 'update') {
+        editor.value = message.content;
+      } else if (message.type === 'cursor') {
+        // Highlight or display a cursor for other users (you can implement this as needed)
+        console.log("Cursor position:", message.position);
+      }
+    });
+  </script>
+</body>
+</html>
